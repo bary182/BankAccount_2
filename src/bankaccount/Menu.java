@@ -8,16 +8,17 @@ public class Menu {
     public static void run(User user) {
         int choice = menu();
         while(choice != 6) {
+            AccountHistory.startTrackingOperationHistory(user);
             switch(choice) {
                 case 1: ReportPrinter.printUserAccountAndDepostitsBalance(user);
                     break;
-                case 2: user.userCurrentAccountBalance.increaseAccountBalance(Transfer.enterAmount());
+                case 2: user.income();
                     break;
                 case 3: user.payment();
                     break;
-                case 4: int lokataChoice = depositMenu();
-                        while (lokataChoice != 4) {
-                            switch(lokataChoice) {
+                case 4: int depositMenuChoice = depositMenu();
+                        while (depositMenuChoice != 4) {
+                            switch(depositMenuChoice) {
                                 case 1: user.newDeposit();
                                     break;
                                 case 2: ReportPrinter.printListOfUserDeposits(user);
@@ -27,15 +28,17 @@ public class Menu {
                                 default: Message.wrongChoice();
                                     break;
                             }
-                            lokataChoice = depositMenu();
+                            //AccountHistory.saveOperation();
+                            depositMenuChoice = depositMenu();
                         }
                     break;
                 case 5:
                     break;
                 default: Message.wrongChoice();
                     break;
-            }         
-            choice = Menu.menu();
+            }
+            AccountHistory.registerDoneOperation(user);
+            choice = menu();
         }
     }
 

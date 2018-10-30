@@ -1,31 +1,33 @@
 package bankaccount;
 
-public class AccountBalance {
-    private double currentAccountBalance = 0;
+import java.math.BigDecimal;
 
-    public double getCurrentAccountBalance() {
+public class AccountBalance {
+    private BigDecimal currentAccountBalance = new BigDecimal("100");
+
+    public BigDecimal getCurrentAccountBalance() {
         return currentAccountBalance;
     }
 
-    public void increaseAccountBalance(double amount) {
+    public void increaseAccountBalance(BigDecimal amount) {
         if (Transfer.isAmountAboveZero(amount))
-            this.currentAccountBalance += amount;
+            this.currentAccountBalance = this.currentAccountBalance.add(amount);
         else
             Message.enterAmountAboveZero();
     }
 
-    public void decreaseAccountBalance(double amount) {
-        double temporaryBalance = this.currentAccountBalance;
-        if (this.currentAccountBalance == 0) {
+    public void decreaseAccountBalance(BigDecimal amount) {
+        BigDecimal temporaryBalance = this.currentAccountBalance;
+        if (this.currentAccountBalance.compareTo(BigDecimal.ZERO) == 0) {
             Message.noFunds();
         }
-        else if (amount < 0)
+        else if (amount.compareTo(BigDecimal.ZERO) == 0)
             Message.negativeAmount();
-        else if ((temporaryBalance -= amount) < 0) {
+        else if ((temporaryBalance = temporaryBalance.subtract(amount)).compareTo(BigDecimal.ZERO) < 0) {
             Message.insufficientFunds();
         }
         else
-            this.currentAccountBalance -= amount;
+            this.currentAccountBalance = currentAccountBalance.subtract(amount);
     }
 }
     

@@ -1,16 +1,17 @@
 package bankaccount;
 
+import java.math.BigDecimal;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Transfer {
     
-    public static double enterAmount() {
+    public static BigDecimal enterAmount() {
         Scanner in = new Scanner(System.in);
-        double amount = 0;
+        BigDecimal amount = new BigDecimal("0");
         System.out.print("Wprowadź kwotę: ");
             try {
-                amount = in.nextDouble();
+                amount = in.nextBigDecimal();
                 System.out.println();
             }
             catch(InputMismatchException e) {
@@ -20,7 +21,7 @@ public class Transfer {
         return amount;
     }
     
-    public static boolean isAmountAboveZero(double amount) {
-        return (amount > 0);
+    public static boolean isAmountAboveZero(BigDecimal amount) {
+        return (amount.compareTo(BigDecimal.ZERO) > 0);
     }
 }

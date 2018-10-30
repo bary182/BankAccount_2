@@ -1,11 +1,15 @@
 package bankaccount;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+
 public class User {
 
-    private double userAllDepositsBalance;
+    private BigDecimal userAllDepositsBalance = new BigDecimal("0");
     String userName;
     AccountBalance userCurrentAccountBalance = new AccountBalance();
     Deposit[] deposits;
+    ArrayList<AccountHistory> history = new ArrayList<>();
     
 
     public User (String userName, int numberOfDeposits) {
@@ -21,26 +25,30 @@ public class User {
         }
     }
     
-    public double getUserAllDepositsBalance() {
-        userAllDepositsBalance = 0;
+    public BigDecimal getUserAllDepositsBalance() {
+        userAllDepositsBalance = new BigDecimal("0");
         for (Deposit d : deposits)
-            userAllDepositsBalance += d.getDepositBalance();
+            userAllDepositsBalance = userAllDepositsBalance.add(d.getDepositBalance());
         return userAllDepositsBalance;
     }
     
-    public double getAllUserBalances() {
-        return this.userCurrentAccountBalance.getCurrentAccountBalance() + this.userAllDepositsBalance;
+    public BigDecimal getAllUserBalances() {
+        return this.userCurrentAccountBalance.getCurrentAccountBalance().add(this.userAllDepositsBalance);
+    }
+    
+    public void income() {
+        this.userCurrentAccountBalance.increaseAccountBalance(Transfer.enterAmount());
     }
     
     public void payment() {
-        if (this.userCurrentAccountBalance.getCurrentAccountBalance() !=0)
+        if (this.userCurrentAccountBalance.getCurrentAccountBalance().compareTo(BigDecimal.ZERO) > 0)
             userCurrentAccountBalance.decreaseAccountBalance(Transfer.enterAmount());
         else
             Message.noFunds();
     }
 
     public void newDeposit() {
-        if(this.userCurrentAccountBalance.getCurrentAccountBalance() == 0)
+        if(this.userCurrentAccountBalance.getCurrentAccountBalance().compareTo(BigDecimal.ZERO) == 0)
             Message.noFunds();
         else if (this.hasAnyEmptyDeposit())
             deposits[Deposit.getIndexOfEmptyDeposit(deposits)].setUserDeposit(this);
@@ -49,7 +57,7 @@ public class User {
     }
      
     public boolean hasAnyEmptyDeposit() {
-        return (deposits[deposits.length-1].getDepositBalance() == 0);
+        return (deposits[deposits.length-1].getDepositBalance().compareTo(BigDecimal.ZERO) == 0);
     }
 
     public void terminateDeposit() {
@@ -61,6 +69,6 @@ public class User {
     }
      
     public boolean hasUserAcitveDeposit() {
-        return (getUserAllDepositsBalance() != 0);
+        return (getUserAllDepositsBalance().compareTo(BigDecimal.ZERO) > 0);
     }
 }

@@ -1,5 +1,7 @@
 package bankaccount;
 
+import java.math.BigDecimal;
+
 public class ReportPrinter {
 
     public static void printUserAccountAndDepostitsBalance(User user) {
@@ -21,7 +23,7 @@ public class ReportPrinter {
             Message.noActiveDeposits();
         else
             for (Deposit d : user.deposits) {
-                if (d.getDepositBalance() != 0)
+                if (d.getDepositBalance().compareTo(BigDecimal.ZERO) > 0)
                     System.out.println("Lokata nr " + d.id + "\t" + "Kwota lokaty: " + d.getDepositBalance());
         }
     }

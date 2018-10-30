@@ -2,28 +2,29 @@ package bankaccount;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.math.BigDecimal;
 
 public class Deposit {
-    private double depositBalance = 0;
+    private BigDecimal depositBalance = new BigDecimal("0");
     int id;
     
-    public double getDepositBalance() {
+    public BigDecimal getDepositBalance() {
         return this.depositBalance;
     }
     
-    public void increaseDepositBalance (double amount) {
-        this.depositBalance += amount;
+    public void increaseDepositBalance (BigDecimal amount) {
+        this.depositBalance = this.depositBalance.add(amount);
     }
     
     public void setDepositBalanceToZero() {
-        this.depositBalance = 0;
+        this.depositBalance = new BigDecimal("0");
     }
 
     public void setUserDeposit (User user) {
-        double bufferedDepositBalance = Transfer.enterAmount();
+        BigDecimal bufferedDepositBalance = Transfer.enterAmount();
         if (!Transfer.isAmountAboveZero(bufferedDepositBalance))
             Message.enterAmountAboveZero();
-        else if (bufferedDepositBalance > user.userCurrentAccountBalance.getCurrentAccountBalance())
+        else if (bufferedDepositBalance.compareTo(user.userCurrentAccountBalance.getCurrentAccountBalance()) > 0)
             Message.insufficientFunds();
         else {
             user.deposits[getIndexOfEmptyDeposit(user.deposits)].increaseDepositBalance(bufferedDepositBalance);
@@ -34,7 +35,7 @@ public class Deposit {
     public static int getIndexOfEmptyDeposit(Deposit[] deposits) {
         int i = 0;
         while (i<deposits.length-1) {
-            if (deposits[i].getDepositBalance() == 0)
+            if (deposits[i].getDepositBalance().compareTo(BigDecimal.ZERO) == 0)
                 break;
             else
             i++;
@@ -58,7 +59,7 @@ public class Deposit {
     }
      
     public static boolean isIndexInRangeOfUserDepositsLimitAndDepositExists(int value, Deposit[] deposit) {
-        return (value >= 0 && value < deposit.length && deposit[value].getDepositBalance() != 0);
+        return (value >= 0 && value < deposit.length && deposit[value].getDepositBalance().compareTo(BigDecimal.ZERO) > 0);
     }
     
     public static int getIndexOfDepositToTerminate() {
@@ -68,7 +69,7 @@ public class Deposit {
             depositIndex = (in.nextInt() - 1);
         }
         catch(InputMismatchException e) {
-            Message.wrongDepositIndex();
+            e.getMessage();
             in.nextLine();
         }
         return depositIndex;
@@ -76,7 +77,7 @@ public class Deposit {
     
     public static void organizeDepositsAfterTerminatedOneOfThem(Deposit[] deposit) {
         for (int i=0; i<deposit.length-1; i++)
-            if (deposit[i].getDepositBalance() == 0 && deposit[i+1].getDepositBalance() != 0) {
+            if (deposit[i].getDepositBalance().compareTo(BigDecimal.ZERO) == 0 && deposit[i+1].getDepositBalance().compareTo(BigDecimal.ZERO) > 0) {
                 deposit[i].increaseDepositBalance(deposit[i+1].getDepositBalance());
                 deposit[i].id = i+1;
                 deposit[i+1].setDepositBalanceToZero();
