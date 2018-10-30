@@ -21,7 +21,7 @@ public class AccountBalance {
         if (this.currentAccountBalance.compareTo(BigDecimal.ZERO) == 0) {
             Message.noFunds();
         }
-        else if (amount.compareTo(BigDecimal.ZERO) == 0)
+        else if (amount.compareTo(BigDecimal.ZERO) < 0)
             Message.negativeAmount();
         else if ((temporaryBalance = temporaryBalance.subtract(amount)).compareTo(BigDecimal.ZERO) < 0) {
             Message.insufficientFunds();
