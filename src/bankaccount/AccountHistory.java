@@ -1,71 +1,102 @@
 package bankaccount;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class AccountHistory {
+public final class AccountHistory {
     
-    private static BigDecimal currentAccountBalanceBeforeOperation = new BigDecimal("0");
-    private static BigDecimal currentAllDepositBalanceBeforeOperation = new BigDecimal("0");
-    private static BigDecimal currentAccountBalanceAfterOperation = new BigDecimal("0");
-    private static BigDecimal currentAllDepositBalanceAfterOperation = new BigDecimal("0");
-    private GregorianCalendar operationDate = new GregorianCalendar();
-    private double operationAmount = 0;
-    // + operationType
+    private BigDecimal currentAccountBalanceAfterOperation = new BigDecimal("0");
+    private BigDecimal currentAllDepositBalanceAfterOperation = new BigDecimal("0");
+    private BigDecimal operationAmount = new BigDecimal("0");
+    enum OperationType {Incoming_Transfer, Outgoing_Transfer, Open_New_Deposit, Terminate_Deposit};
+    private final OperationType operationType;
+    private final Date operationDate;
     
-    private static BigDecimal getCurrentAccountBalanceBeforeOperation() {
-        return currentAccountBalanceBeforeOperation;
+    public AccountHistory(User user) {
+        if (user.history.isEmpty()) {
+            this.operationAmount = this.getFirstIncomingTransfer(user);
+            this.operationType = OperationType.Incoming_Transfer;
+            this.operationDate = new GregorianCalendar().getTime();
+            this.currentAccountBalanceAfterOperation = user.userCurrentAccountBalance.getCurrentAccountBalance();
+            this.currentAllDepositBalanceAfterOperation = user.getUserAllDepositsBalance();
+        }
+        else {
+            this.operationAmount = this.recognizeOperationAmount(user);
+            this.operationType = this.recognizeOperationType(user);
+            this.operationDate = new GregorianCalendar().getTime();
+            this.currentAccountBalanceAfterOperation = user.userCurrentAccountBalance.getCurrentAccountBalance();
+            this.currentAllDepositBalanceAfterOperation = user.getUserAllDepositsBalance();
+        }
     }
-     
-    private static BigDecimal currentAllDepositBalanceBeforeOperation() {
-        return currentAllDepositBalanceBeforeOperation;
-    }
-    
-    private static BigDecimal getCurrentAccountBalanceAfterOperation(User user) {
+
+    private BigDecimal getFirstIncomingTransfer (User user) {
         return user.userCurrentAccountBalance.getCurrentAccountBalance();
     }
-     
-    private static BigDecimal currentAllDepositBalanceAfterOperation(User user) {
-        return user.getUserAllDepositsBalance();
-    }
 
-    public static void startTrackingOperationHistory(User user) {
-        currentAccountBalanceBeforeOperation = user.userCurrentAccountBalance.getCurrentAccountBalance();
-        currentAllDepositBalanceBeforeOperation = user.getUserAllDepositsBalance();
+    private BigDecimal recognizeOperationAmount (User user) {
+        if (this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceNotChanged(user))
+            return this.incomingTransferAmount(user);
+        else if (!this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceNotChanged(user))
+            return this.outgoingTransferAmount(user);
+        else if (!this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceIncreased(user))
+            return this.depositOpenAmount(user);
+        else
+            return this.depositCloseAmount(user);
     }
     
-    public static void registerDoneOperation(User user) {
-        System.out.println ("Saldo ostatniej operacji: \t\t " + (getCurrentAccountBalanceAfterOperation(user).subtract(getCurrentAccountBalanceBeforeOperation())));
-        System.out.println ("Saldo ostatniej operacji na lokatach: \t" + (currentAllDepositBalanceAfterOperation(user).subtract(currentAllDepositBalanceBeforeOperation())));
+    private BigDecimal incomingTransferAmount(User user) {
+        return user.userCurrentAccountBalance.getCurrentAccountBalance().subtract(user.history.get(user.history.size()-1).currentAccountBalanceAfterOperation);
+    }
+    
+    private BigDecimal outgoingTransferAmount(User user) {
+        return user.history.get(user.history.size()-1).currentAccountBalanceAfterOperation.subtract(user.userCurrentAccountBalance.getCurrentAccountBalance());
+    }
+        
+    private BigDecimal depositOpenAmount(User user) {
+        return user.history.get(user.history.size()-1).currentAccountBalanceAfterOperation.subtract(user.userCurrentAccountBalance.getCurrentAccountBalance());
+    }
+            
+    private BigDecimal depositCloseAmount(User user) {
+        return user.userCurrentAccountBalance.getCurrentAccountBalance().subtract(user.history.get(user.history.size()-1).currentAccountBalanceAfterOperation);
+    }
+
+    private OperationType recognizeOperationType (User user) {
+        if (this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceNotChanged(user))
+            return OperationType.Incoming_Transfer;
+        else if (!this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceNotChanged(user))
+            return OperationType.Outgoing_Transfer;
+        else if (!this.currentAccountBalanceIncreased(user) && this.currentAllDepositBalanceIncreased(user))
+            return OperationType.Open_New_Deposit;
+        else
+            return OperationType.Terminate_Deposit;
+    }
+    
+    private boolean currentAccountBalanceIncreased(User user) {
+        return user.userCurrentAccountBalance.getCurrentAccountBalance().compareTo(user.history.get(user.history.size()-1).currentAccountBalanceAfterOperation) > 0;
+    }
+    
+    private boolean currentAllDepositBalanceNotChanged(User user) {
+        return (user.getUserAllDepositsBalance().compareTo(user.history.get(user.history.size()-1).currentAllDepositBalanceAfterOperation)) == 0;
+    }
+        
+    private boolean currentAllDepositBalanceIncreased(User user) {
+        return (user.getUserAllDepositsBalance().compareTo(user.history.get(user.history.size()-1).currentAllDepositBalanceAfterOperation)) > 0;
+    }
+    
+    public BigDecimal getOperationAmount () {
+        return this.operationAmount;
+    }
+    
+    public String getOperationType() {
+        return operationType.toString();
+    }
+
+    public BigDecimal getCurrentAccountBalanceAfterOperation () {
+        return this.currentAccountBalanceAfterOperation;
+    }
+    
+    public Date getOperationDate () {
+        return this.operationDate;
     }
 }
-
-//    public static void przesunZdarzenia(AccountHistory[] myLok) {
-//        for (int i=0; i<myLok.length-1; i++) {
-//            myLok[i].rodzaj = myLok[i+1].rodzaj;
-//            myLok[i].kwota = myLok[i+1].kwota;
-//            myLok[i].saldoPoZdarzeniu = myLok[i+1].saldoPoZdarzeniu;
-//            myLok[i].saldoLokat = myLok[i+1].saldoLokat;
-//            myLok[i].data = myLok[i+1].data;
-//        }
-//        licznikZdarzen--;
-//    }
-//    void zapiszZdarzenieWplaty(double kwota) {
-//        this.rodzaj = "Wpłata środków   ";
-//        zmienStan(kwota);
-//    }
-//    
-//    void zapiszZdarzenieWyplaty(double kwota) {
-//        this.rodzaj = "Wypłata środków   ";
-//        zmienStan(kwota);
-//    }
-//    
-//    void zapiszZdarzenieOtwarciaLokaty (double kwota) {
-//        this.rodzaj = "Otwarcie lokaty   ";
-//        zmienStan(kwota);
-//    }
-//    
-//    void zapiszZdarzenieZamknieciaLokaty(double kwota) {
-//        this.rodzaj = "Zamknięcie lokaty";
-//        zmienStan(kwota);
-//    }

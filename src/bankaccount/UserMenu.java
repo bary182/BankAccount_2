@@ -3,51 +3,51 @@ package bankaccount;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-public class Menu {
-    
+public class UserMenu {
     public static void run(User user) {
+        DataFiles.loadAccountBalanceFromFile(user);
+        DataFiles.loadDepositsFromFile(user);
         int choice = menu();
         while(choice != 6) {
-            AccountHistory.startTrackingOperationHistory(user);
             switch(choice) {
                 case 1: ReportPrinter.printUserAccountAndDepostitsBalance(user);
                     break;
-                case 2: user.income();
+                case 2: user.incomingTransfer();
+                        user.registerHistory();
                     break;
-                case 3: user.payment();
+                case 3: user.outgoingTransfer();
+                        user.registerHistory();
                     break;
                 case 4: int depositMenuChoice = depositMenu();
                         while (depositMenuChoice != 4) {
                             switch(depositMenuChoice) {
                                 case 1: user.newDeposit();
+                                        user.registerHistory();
                                     break;
                                 case 2: ReportPrinter.printListOfUserDeposits(user);
                                     break;
                                 case 3: user.terminateDeposit();
+                                        user.registerHistory();
                                     break;
                                 default: Message.wrongChoice();
                                     break;
                             }
-                            //AccountHistory.saveOperation();
                             depositMenuChoice = depositMenu();
                         }
                     break;
-                case 5:
+                case 5: ReportPrinter.printAccountHistory(user);
                     break;
                 default: Message.wrongChoice();
                     break;
             }
-            AccountHistory.registerDoneOperation(user);
+            DataFiles.saveAccountBalanceToFile(user);
+            DataFiles.saveDepositsToFile(user);
             choice = menu();
         }
     }
 
-    public static void depositRun() {
-        depositMenu();
-    }
-
     public static int menu() {
-        System.out.println("MENU GŁÓWNE:");
+        System.out.println("\nMENU GŁÓWNE:");
         System.out.println("1. Sprawdź saldo");
         System.out.println("2. Wpłać środki");
         System.out.println("3. Wykonaj przelew");

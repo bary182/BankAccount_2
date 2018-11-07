@@ -36,6 +36,10 @@ public class Message {
     public static void noActiveDeposits() {  
         System.out.println("Nie masz otwartych lokat!");
     }
+    
+    public static void noAccountHistory() {  
+        System.out.println("Brak zarejestrowanych operacji!");
+    }
 
     public static void enterIndexOfDepositToTerminate() {    
         System.out.print("Podaj nr lokaty do zamknięcia: ");
